@@ -1,0 +1,62 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Notices - School Management System{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1 style="margin-bottom: 30px;">School Notices</h1>
+    
+    <form method="get" class="search-form">
+        <input type="text" name="search" placeholder="Search notices..." value="{{ request.GET.search }}">
+        <button type="submit" class="btn">Search</button>
+        {% if request.GET.search %}
+            <a href="{% url 'public:notice_list' %}" class="btn">Clear</a>
+        {% endif %}
+    </form>
+</div>
+
+{% if notices %}
+    {% for notice in notices %}
+    <div class="card">
+        <h2 style="color: #3498db; margin-bottom: 10px;">{{ notice.title }}</h2>
+        <p style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">
+            Published on {{ notice.created_at|date:"F d, Y" }}
+            {% if notice.updated_at != notice.created_at %}
+                (Updated: {{ notice.updated_at|date:"F d, Y" }})
+            {% endif %}
+        </p>
+        <div style="line-height: 1.6;">
+            {{ notice.content|linebreaks }}
+        </div>
+    </div>
+    {% endfor %}
+    
+    {% if is_paginated %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">&laquo; First</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+        {% endif %}
+        
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+        
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Last &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+{% else %}
+    <div class="card">
+        <p style="text-align: center; color: #666; font-size: 1.1rem;">
+            {% if request.GET.search %}
+                No notices found matching your search.
+            {% else %}
+                No notices available at the moment.
+            {% endif %}
+        </p>
+    </div>
+{% endif %}
+{% endblock %}

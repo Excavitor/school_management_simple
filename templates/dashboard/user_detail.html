@@ -1,0 +1,134 @@
+{% extends 'base/dashboard_base.html' %}
+
+{% block title %}User Details - {{ object.email }} - School Management System{% endblock %}
+
+{% block dashboard_content %}
+<div class="card">
+    <h1 style="margin-bottom: 30px;">User Details</h1>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+        <div>
+            <h3 style="margin-bottom: 15px; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">
+                Basic Information
+            </h3>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Email:</strong><br>
+                <span style="color: #666;">{{ object.email }}</span>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Full Name:</strong><br>
+                <span style="color: #666;">
+                    {% if object.first_name or object.last_name %}
+                        {{ object.first_name }} {{ object.last_name }}
+                    {% else %}
+                        <em>Not provided</em>
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Phone:</strong><br>
+                <span style="color: #666;">
+                    {% if object.phone %}
+                        {{ object.phone }}
+                    {% else %}
+                        <em>Not provided</em>
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Date Joined:</strong><br>
+                <span style="color: #666;">{{ object.date_joined|date:"F d, Y g:i A" }}</span>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Last Login:</strong><br>
+                <span style="color: #666;">
+                    {% if object.last_login %}
+                        {{ object.last_login|date:"F d, Y g:i A" }}
+                    {% else %}
+                        <em>Never logged in</em>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+        
+        <div>
+            <h3 style="margin-bottom: 15px; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">
+                Permissions & Status
+            </h3>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Account Status:</strong><br>
+                {% if object.is_active %}
+                    <span style="color: #27ae60; font-weight: bold;">✓ Active</span>
+                {% else %}
+                    <span style="color: #e74c3c; font-weight: bold;">✗ Inactive</span>
+                {% endif %}
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>User Type:</strong><br>
+                {% if object.is_superuser %}
+                    <span style="color: #e74c3c; font-weight: bold;">Superuser</span>
+                {% elif object.is_staff %}
+                    <span style="color: #f39c12; font-weight: bold;">Staff</span>
+                {% else %}
+                    <span style="color: #666;">Regular User</span>
+                {% endif %}
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Assigned Roles:</strong><br>
+                {% if object.groups.exists %}
+                    {% for group in object.groups.all %}
+                        <span style="background: #3498db; color: white; padding: 4px 8px; border-radius: 3px; font-size: 0.8rem; margin-right: 5px; margin-bottom: 5px; display: inline-block;">
+                            {{ group.name }}
+                        </span>
+                    {% endfor %}
+                {% else %}
+                    <em style="color: #666;">No roles assigned</em>
+                {% endif %}
+            </div>
+            
+            {% if object.groups.exists %}
+            <div style="margin-bottom: 15px;">
+                <strong>Permissions:</strong><br>
+                <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 3px; background: #f8f9fa;">
+                    {% for group in object.groups.all %}
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: #2c3e50;">{{ group.name }}:</strong>
+                            {% if group.permissions.exists %}
+                                <ul style="margin: 5px 0 0 20px; font-size: 0.8rem;">
+                                    {% for permission in group.permissions.all %}
+                                        <li style="color: #666; margin-bottom: 2px;">{{ permission.name }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <em style="color: #666; font-size: 0.8rem;">No permissions</em>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div style="display: flex; gap: 10px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+        {% if perms.auth.change_user %}
+            <a href="{% url 'dashboard:user_update' object.pk %}" class="btn">Edit User</a>
+        {% endif %}
+        {% if user.is_superuser or perms.auth.change_user %}
+            <a href="{% url 'dashboard:user_role_update' object.pk %}" class="btn">Manage Roles</a>
+        {% endif %}
+        {% if perms.auth.delete_user and not object.is_superuser and object != request.user %}
+            <a href="{% url 'dashboard:user_delete' object.pk %}" class="btn btn-danger">Delete User</a>
+        {% endif %}
+        <a href="{% url 'dashboard:user_management' %}" class="btn">Back to Users</a>
+    </div>
+</div>
+{% endblock %}

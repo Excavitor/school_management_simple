@@ -1,0 +1,108 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Admission Application - School Management System{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+    <h1 style="text-align: center; margin-bottom: 30px;">Admission Application</h1>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <h3 style="margin-bottom: 20px; color: #2c3e50;">Student Information</h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div class="form-group">
+                <label for="first_name">First Name *</label>
+                <input type="text" id="first_name" name="first_name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="last_name">Last Name *</label>
+                <input type="text" id="last_name" name="last_name" required>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="phone">Phone *</label>
+                <input type="tel" id="phone" name="phone" required>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div class="form-group">
+                <label for="date_of_birth">Date of Birth *</label>
+                <input type="date" id="date_of_birth" name="date_of_birth" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="gender">Gender *</label>
+                <select id="gender" name="gender" required>
+                    <option value="">Select Gender</option>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                    <option value="O">Other</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="address">Address *</label>
+            <textarea id="address" name="address" rows="3" required></textarea>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div class="form-group">
+                <label for="previous_school">Previous School</label>
+                <input type="text" id="previous_school" name="previous_school">
+            </div>
+            
+            <div class="form-group">
+                <label for="grade_applying_for">Grade Applying For *</label>
+                <input type="text" id="grade_applying_for" name="grade_applying_for" required>
+            </div>
+        </div>
+        
+        <h3 style="margin: 30px 0 20px 0; color: #2c3e50;">Parent/Guardian Information</h3>
+        
+        <div class="form-group">
+            <label for="parent_name">Parent/Guardian Name *</label>
+            <input type="text" id="parent_name" name="parent_name" required>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div class="form-group">
+                <label for="parent_phone">Parent Phone *</label>
+                <input type="tel" id="parent_phone" name="parent_phone" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="parent_email">Parent Email *</label>
+                <input type="email" id="parent_email" name="parent_email" required>
+            </div>
+        </div>
+        
+        {% if form.errors %}
+            <div class="message error">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <p><strong>{{ field }}:</strong> {{ error }}</p>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <button type="submit" class="btn btn-success" style="padding: 15px 30px; font-size: 1.1rem;">
+                Submit Application
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

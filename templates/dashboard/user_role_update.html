@@ -1,0 +1,91 @@
+{% extends 'base/dashboard_base.html' %}
+
+{% block title %}Update User Roles - School Management System{% endblock %}
+
+{% block dashboard_content %}
+<div class="card">
+    <h1 style="margin-bottom: 30px;">Update Roles for {{ user_obj.first_name }} {{ user_obj.last_name }}</h1>
+    
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 30px;">
+        <p><strong>User:</strong> {{ user_obj.email }}</p>
+        <p><strong>Current Status:</strong> 
+            {% if user_obj.is_superuser %}
+                <span style="color: #e74c3c; font-weight: bold;">Superuser</span>
+            {% elif user_obj.is_staff %}
+                <span style="color: #f39c12; font-weight: bold;">Staff</span>
+            {% else %}
+                <span style="color: #27ae60; font-weight: bold;">Regular User</span>
+            {% endif %}
+        </p>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <h3 style="margin-bottom: 20px;">Assign Roles (Groups)</h3>
+        
+        {% if groups %}
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                {% for group in groups %}
+                <div style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
+                    <label style="display: flex; align-items: start; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" name="groups" value="{{ group.pk }}" 
+                               {% if group in user_obj.groups.all %}checked{% endif %}
+                               style="margin-top: 3px;">
+                        <div>
+                            <strong>{{ group.name }}</strong>
+                            {% if group.permissions.exists %}
+                                <ul style="margin: 5px 0 0 0; padding-left: 20px; font-size: 0.8rem; color: #666;">
+                                    {% for permission in group.permissions.all %}
+                                        <li>{{ permission.name }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p style="margin: 5px 0 0 0; font-size: 0.8rem; color: #666; font-style: italic;">
+                                    No permissions assigned
+                                </p>
+                            {% endif %}
+                        </div>
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin-bottom: 30px;">
+                <p style="color: #856404; margin: 0;">
+                    No roles (groups) are available. Create them in the Django admin panel first.
+                </p>
+            </div>
+        {% endif %}
+        
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn btn-success">Update Roles</button>
+            <a href="{% url 'dashboard:role_management' %}" class="btn">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <h3 style="margin-bottom: 15px;">Current Role Summary</h3>
+    
+    {% if user_obj.groups.exists %}
+        <p style="margin-bottom: 15px;">This user currently has the following roles:</p>
+        <ul>
+            {% for group in user_obj.groups.all %}
+                <li style="margin-bottom: 10px;">
+                    <strong>{{ group.name }}</strong>
+                    {% if group.permissions.exists %}
+                        <ul style="margin-top: 5px;">
+                            {% for permission in group.permissions.all %}
+                                <li style="font-size: 0.9rem; color: #666;">{{ permission.name }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p style="color: #666; font-style: italic;">This user has no roles assigned.</p>
+    {% endif %}
+</div>
+{% endblock %}

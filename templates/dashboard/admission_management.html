@@ -1,0 +1,107 @@
+{% extends 'base/dashboard_base.html' %}
+
+{% block title %}Admission Management - School Management System{% endblock %}
+
+{% block dashboard_content %}
+<div class="card">
+    <h1 style="margin-bottom: 20px;">Admission Applications</h1>
+    
+    {% if perms.public.add_admissionapplication %}
+    <div class="actions">
+        <a href="{% url 'dashboard:admission_create' %}" class="btn btn-success">Create New Application</a>
+    </div>
+    {% endif %}
+    
+    <div class="filters">
+        <form method="get">
+            <div class="form-group">
+                <label for="search">Search:</label>
+                <input type="text" id="search" name="search" placeholder="Search by name or email..." value="{{ request.GET.search }}">
+            </div>
+            <div class="form-group">
+                <label for="grade">Grade:</label>
+                <input type="text" id="grade" name="grade" placeholder="Filter by grade..." value="{{ request.GET.grade }}">
+            </div>
+            <button type="submit" class="btn">Filter</button>
+            {% if request.GET.search or request.GET.grade %}
+                <a href="{% url 'dashboard:admission_management' %}" class="btn">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+{% if applications %}
+<div class="card">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>Email</th>
+                <th>Grade</th>
+                <th>Applied Date</th>
+                <th>Parent Contact</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for application in applications %}
+            <tr>
+                <td>
+                    <strong>{{ application.first_name }} {{ application.last_name }}</strong>
+                    <br>
+                    <small style="color: #666;">DOB: {{ application.date_of_birth|date:"M d, Y" }}</small>
+                </td>
+                <td>{{ application.email }}</td>
+                <td>{{ application.grade_applying_for }}</td>
+                <td>{{ application.created_at|date:"M d, Y" }}</td>
+                <td>
+                    <strong>{{ application.parent_name }}</strong>
+                    <br>
+                    <small style="color: #666;">{{ application.parent_phone }}</small>
+                </td>
+                <td>
+                    <div style="display: flex; gap: 5px;">
+                        <a href="{% url 'dashboard:admission_detail' application.pk %}" class="btn" style="padding: 5px 10px; font-size: 0.8rem;">View</a>
+                        {% if perms.public.change_admissionapplication %}
+                            <a href="{% url 'dashboard:admission_update' application.pk %}" class="btn" style="padding: 5px 10px; font-size: 0.8rem;">Edit</a>
+                        {% endif %}
+                        {% if perms.public.delete_admissionapplication %}
+                            <a href="{% url 'dashboard:admission_delete' application.pk %}" class="btn btn-danger" style="padding: 5px 10px; font-size: 0.8rem;">Delete</a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {% if is_paginated %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.grade %}&grade={{ request.GET.grade }}{% endif %}">&laquo; First</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.grade %}&grade={{ request.GET.grade }}{% endif %}">Previous</a>
+        {% endif %}
+        
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+        
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.grade %}&grade={{ request.GET.grade }}{% endif %}">Next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.grade %}&grade={{ request.GET.grade }}{% endif %}">Last &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% else %}
+<div class="card">
+    <p style="text-align: center; color: #666; font-size: 1.1rem;">
+        {% if request.GET.search or request.GET.grade %}
+            No applications found matching your criteria.
+        {% else %}
+            No admission applications received yet.
+        {% endif %}
+    </p>
+</div>
+{% endif %}
+{% endblock %}

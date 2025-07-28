@@ -1,0 +1,82 @@
+{% extends 'base/dashboard_base.html' %}
+
+{% block title %}Delete Role - {{ group.name }} - School Management System{% endblock %}
+
+{% block dashboard_content %}
+<div class="card">
+    <h1 style="margin-bottom: 30px; color: #e74c3c;">Delete Role</h1>
+    
+    <div style="background: #f8d7da; border: 1px solid #f5c6cb; padding: 20px; border-radius: 5px; margin-bottom: 30px;">
+        <h3 style="color: #721c24; margin-bottom: 15px;">⚠️ Warning</h3>
+        <p style="color: #721c24; margin: 0;">
+            You are about to permanently delete the role <strong>"{{ group.name }}"</strong>. 
+            This action cannot be undone.
+        </p>
+    </div>
+    
+    <div style="background: white; border: 1px solid #ddd; padding: 20px; border-radius: 5px; margin-bottom: 30px;">
+        <h3 style="margin-bottom: 15px; color: #2c3e50;">Role Information</h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <p><strong>Role Name:</strong> {{ group.name }}</p>
+                <p><strong>Users with this role:</strong> {{ group.user_set.count }}</p>
+                <p><strong>Permissions count:</strong> {{ group.permissions.count }}</p>
+            </div>
+            
+            <div>
+                {% if group.user_set.exists %}
+                <p><strong>Affected Users:</strong></p>
+                <div style="max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 3px; background: #f8f9fa;">
+                    {% for user in group.user_set.all %}
+                        <div style="margin-bottom: 5px; font-size: 0.9rem;">
+                            {{ user.email }}
+                            {% if user.first_name or user.last_name %}
+                                ({{ user.first_name }} {{ user.last_name }})
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if group.permissions.exists %}
+        <div style="margin-top: 20px;">
+            <p><strong>Permissions in this role:</strong></p>
+            <div style="max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 3px; background: #f8f9fa;">
+                {% for permission in group.permissions.all %}
+                    <div style="margin-bottom: 3px; font-size: 0.8rem; color: #666;">
+                        {{ permission.name }}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin-bottom: 30px;">
+        <p style="color: #856404; margin: 0;">
+            <strong>What will happen:</strong>
+        </p>
+        <ul style="color: #856404; margin: 10px 0 0 20px;">
+            <li>The role "{{ group.name }}" will be permanently deleted</li>
+            {% if group.user_set.exists %}
+                <li>{{ group.user_set.count }} user(s) will lose this role and its permissions</li>
+            {% endif %}
+            <li>All permissions associated with this role will be removed</li>
+            <li>This action cannot be reversed</li>
+        </ul>
+    </div>
+    
+    <form method="post" style="display: inline;">
+        {% csrf_token %}
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn btn-danger">
+                Yes, Delete Role
+            </button>
+            <a href="{% url 'dashboard:role_management' %}" class="btn">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

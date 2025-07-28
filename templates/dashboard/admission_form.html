@@ -1,0 +1,137 @@
+{% extends 'base/dashboard_base.html' %}
+
+{% block title %}
+    {% if object %}Edit Admission Application{% else %}Create Admission Application{% endif %} - School Management System
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="card">
+    <h1 style="margin-bottom: 30px;">
+        {% if object %}Edit Admission Application{% else %}Create Admission Application{% endif %}
+    </h1>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div class="form-group">
+                <label for="id_first_name">First Name:</label>
+                <input type="text" id="id_first_name" name="first_name" value="{{ form.first_name.value|default:'' }}" required>
+                {% if form.first_name.errors %}
+                    <div style="color: #e74c3c; font-size: 0.8rem;">{{ form.first_name.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="id_last_name">Last Name:</label>
+                <input type="text" id="id_last_name" name="last_name" value="{{ form.last_name.value|default:'' }}" required>
+                {% if form.last_name.errors %}
+                    <div style="color: #e74c3c; font-size: 0.8rem;">{{ form.last_name.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div class="form-group">
+                <label for="id_email">Email:</label>
+                <input type="email" id="id_email" name="email" value="{{ form.email.value|default:'' }}" required>
+                {% if form.email.errors %}
+                    <div style="color: #e74c3c; font-size: 0.8rem;">{{ form.email.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="id_phone">Phone:</label>
+                <input type="text" id="id_phone" name="phone" value="{{ form.phone.value|default:'' }}" required>
+                {% if form.phone.errors %}
+                    <div style="color: #e74c3c; font-size: 0.8rem;">{{ form.phone.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div class="form-group">
+                <label for="id_date_of_birth">Date of Birth:</label>
+                <input type="date" id="id_date_of_birth" name="date_of_birth" value="{{ form.date_of_birth.value|date:'Y-m-d'|default:'' }}" required>
+                {% if form.date_of_birth.errors %}
+                    <div style="color: #e74c3c; font-size: 0.8rem;">{{ form.date_of_birth.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="id_gender">Gender:</label>
+                <select id="id_gender" name="gender" required>
+                    <option value="">Select Gender</option>
+                    <option value="M" {% if form.gender.value == 'M' %}selected{% endif %}>Male</option>
+                    <option value="F" {% if form.gender.value == 'F' %}selected{% endif %}>Female</option>
+                    <option value="O" {% if form.gender.value == 'O' %}selected{% endif %}>Other</option>
+                </select>
+                {% if form.gender.errors %}
+                    <div style="color: #e74c3c; font-size: 0.8rem;">{{ form.gender.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="id_address">Address:</label>
+            <textarea id="id_address" name="address" rows="3" required>{{ form.address.value|default:'' }}</textarea>
+            {% if form.address.errors %}
+                <div style="color: #e74c3c; font-size: 0.8rem;">{{ form.address.errors.0 }}</div>
+            {% endif %}
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div class="form-group">
+                <label for="id_previous_school">Previous School (Optional):</label>
+                <input type="text" id="id_previous_school" name="previous_school" value="{{ form.previous_school.value|default:'' }}">
+                {% if form.previous_school.errors %}
+                    <div style="color: #e74c3c; font-size: 0.8rem;">{{ form.previous_school.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="id_grade_applying_for">Grade Applying For:</label>
+                <input type="text" id="id_grade_applying_for" name="grade_applying_for" value="{{ form.grade_applying_for.value|default:'' }}" required>
+                {% if form.grade_applying_for.errors %}
+                    <div style="color: #e74c3c; font-size: 0.8rem;">{{ form.grade_applying_for.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <h3 style="margin: 30px 0 20px 0; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">Parent/Guardian Information</h3>
+        
+        <div class="form-group">
+            <label for="id_parent_name">Parent/Guardian Name:</label>
+            <input type="text" id="id_parent_name" name="parent_name" value="{{ form.parent_name.value|default:'' }}" required>
+            {% if form.parent_name.errors %}
+                <div style="color: #e74c3c; font-size: 0.8rem;">{{ form.parent_name.errors.0 }}</div>
+            {% endif %}
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div class="form-group">
+                <label for="id_parent_phone">Parent/Guardian Phone:</label>
+                <input type="text" id="id_parent_phone" name="parent_phone" value="{{ form.parent_phone.value|default:'' }}" required>
+                {% if form.parent_phone.errors %}
+                    <div style="color: #e74c3c; font-size: 0.8rem;">{{ form.parent_phone.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="id_parent_email">Parent/Guardian Email:</label>
+                <input type="email" id="id_parent_email" name="parent_email" value="{{ form.parent_email.value|default:'' }}" required>
+                {% if form.parent_email.errors %}
+                    <div style="color: #e74c3c; font-size: 0.8rem;">{{ form.parent_email.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 30px;">
+            <button type="submit" class="btn btn-success">
+                {% if object %}Update Application{% else %}Create Application{% endif %}
+            </button>
+            <a href="{% url 'dashboard:admission_management' %}" class="btn">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

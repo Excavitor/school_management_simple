@@ -1,0 +1,43 @@
+{% extends 'base/dashboard_base.html' %}
+
+{% block title %}{{ notice.title }} - School Management System{% endblock %}
+
+{% block dashboard_content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
+        <div>
+            <h1 style="margin-bottom: 10px;">{{ notice.title }}</h1>
+            <div style="color: #666; font-size: 0.9rem;">
+                <p>Created: {{ notice.created_at|date:"F d, Y g:i A" }}</p>
+                {% if notice.updated_at != notice.created_at %}
+                    <p>Updated: {{ notice.updated_at|date:"F d, Y g:i A" }}</p>
+                {% endif %}
+                <p>Status: 
+                    {% if notice.is_active %}
+                        <span style="color: #27ae60; font-weight: bold;">Active</span>
+                    {% else %}
+                        <span style="color: #e74c3c; font-weight: bold;">Inactive</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 10px;">
+            {% if perms.public.change_notice %}
+                <a href="{% url 'dashboard:notice_update' notice.pk %}" class="btn">Edit</a>
+            {% endif %}
+            {% if perms.public.delete_notice %}
+                <a href="{% url 'dashboard:notice_delete' notice.pk %}" class="btn btn-danger">Delete</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div style="line-height: 1.6; font-size: 1.1rem;">
+        {{ notice.content|linebreaks }}
+    </div>
+    
+    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+        <a href="{% url 'dashboard:notice_management' %}" class="btn">← Back to Notice Management</a>
+    </div>
+</div>
+{% endblock %}

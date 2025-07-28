@@ -1,0 +1,189 @@
+{% extends 'base/base.html' %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        display: flex;
+        gap: 20px;
+        min-height: calc(100vh - 140px);
+    }
+    
+    .sidebar {
+        width: 250px;
+        background: white;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        height: fit-content;
+    }
+    
+    .sidebar h3 {
+        margin-bottom: 15px;
+        color: #2c3e50;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 5px;
+    }
+    
+    .sidebar ul {
+        list-style: none;
+        margin-bottom: 20px;
+    }
+    
+    .sidebar ul li {
+        margin-bottom: 8px;
+    }
+    
+    .sidebar ul li a {
+        display: block;
+        padding: 8px 12px;
+        color: #333;
+        text-decoration: none;
+        border-radius: 3px;
+        transition: background 0.3s;
+    }
+    
+    .sidebar ul li a:hover {
+        background: #f8f9fa;
+    }
+    
+    .sidebar ul li a.active {
+        background: #3498db;
+        color: white;
+    }
+    
+    .main-content {
+        flex: 1;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .stat-card h3 {
+        font-size: 2rem;
+        color: #3498db;
+        margin-bottom: 10px;
+    }
+    
+    .stat-card p {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .actions {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 5px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .table th,
+    .table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .table th {
+        background: #f8f9fa;
+        font-weight: bold;
+    }
+    
+    .table tr:hover {
+        background: #f8f9fa;
+    }
+    
+    .filters {
+        background: white;
+        padding: 15px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .filters form {
+        display: flex;
+        gap: 10px;
+        align-items: end;
+        flex-wrap: wrap;
+    }
+    
+    .filters .form-group {
+        margin-bottom: 0;
+        min-width: 200px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <h3>Dashboard</h3>
+        <ul>
+            <li><a href="{% url 'dashboard:dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}class="active"{% endif %}>Overview</a></li>
+        </ul>
+        
+        {% if perms.public.view_notice %}
+        <h3>Notices</h3>
+        <ul>
+            <li><a href="{% url 'dashboard:notice_management' %}" {% if 'notice' in request.resolver_match.url_name %}class="active"{% endif %}>View Notices</a></li>
+            {% if perms.public.add_notice %}
+            <li><a href="{% url 'dashboard:notice_create' %}">Create Notice</a></li>
+            {% endif %}
+        </ul>
+        {% endif %}
+        
+        {% if perms.public.view_admissionapplication %}
+        <h3>Admissions</h3>
+        <ul>
+            <li><a href="{% url 'dashboard:admission_management' %}" {% if 'admission' in request.resolver_match.url_name %}class="active"{% endif %}>View Applications</a></li>
+            {% if perms.public.add_admissionapplication %}
+            <li><a href="{% url 'dashboard:admission_create' %}">Create Application</a></li>
+            {% endif %}
+        </ul>
+        {% endif %}
+        
+        {% if user.is_superuser or perms.auth.view_user %}
+        <h3>User Management</h3>
+        <ul>
+            <li><a href="{% url 'dashboard:user_management' %}" {% if 'user' in request.resolver_match.url_name %}class="active"{% endif %}>View Users</a></li>
+            {% if perms.auth.add_user %}
+            <li><a href="{% url 'dashboard:user_create' %}">Create User</a></li>
+            {% endif %}
+        </ul>
+        {% endif %}
+        
+        {% if user.is_superuser %}
+        <h3>Role Management</h3>
+        <ul>
+            <li><a href="{% url 'dashboard:role_management' %}" {% if 'role' in request.resolver_match.url_name %}class="active"{% endif %}>Manage Roles</a></li>
+            <li><a href="{% url 'dashboard:role_create' %}">Create Role</a></li>
+        </ul>
+        {% endif %}
+    </aside>
+    
+    <div class="main-content">
+        {% block dashboard_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

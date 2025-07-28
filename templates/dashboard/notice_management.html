@@ -1,0 +1,102 @@
+{% extends 'base/dashboard_base.html' %}
+
+{% block title %}Notice Management - School Management System{% endblock %}
+
+{% block dashboard_content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1>Notice Management</h1>
+        {% if perms.public.add_notice %}
+            <a href="{% url 'dashboard:notice_create' %}" class="btn btn-success">Create New Notice</a>
+        {% endif %}
+    </div>
+    
+    <div class="filters">
+        <form method="get">
+            <div class="form-group">
+                <label for="search">Search:</label>
+                <input type="text" id="search" name="search" placeholder="Search notices..." value="{{ request.GET.search }}">
+            </div>
+            <button type="submit" class="btn">Search</button>
+            {% if request.GET.search %}
+                <a href="{% url 'dashboard:notice_management' %}" class="btn">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+{% if notices %}
+<div class="card">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Updated</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for notice in notices %}
+            <tr>
+                <td>
+                    <strong>{{ notice.title }}</strong>
+                    <br>
+                    <small style="color: #666;">{{ notice.content|truncatewords:10 }}</small>
+                </td>
+                <td>
+                    {% if notice.is_active %}
+                        <span style="color: #27ae60; font-weight: bold;">Active</span>
+                    {% else %}
+                        <span style="color: #e74c3c; font-weight: bold;">Inactive</span>
+                    {% endif %}
+                </td>
+                <td>{{ notice.created_at|date:"M d, Y" }}</td>
+                <td>{{ notice.updated_at|date:"M d, Y" }}</td>
+                <td>
+                    <div style="display: flex; gap: 5px;">
+                        <a href="{% url 'dashboard:notice_detail' notice.pk %}" class="btn" style="padding: 5px 10px; font-size: 0.8rem;">View</a>
+                        {% if perms.public.change_notice %}
+                            <a href="{% url 'dashboard:notice_update' notice.pk %}" class="btn" style="padding: 5px 10px; font-size: 0.8rem;">Edit</a>
+                        {% endif %}
+                        {% if perms.public.delete_notice %}
+                            <a href="{% url 'dashboard:notice_delete' notice.pk %}" class="btn btn-danger" style="padding: 5px 10px; font-size: 0.8rem;">Delete</a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {% if is_paginated %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">&laquo; First</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+        {% endif %}
+        
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+        
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Last &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% else %}
+<div class="card">
+    <p style="text-align: center; color: #666; font-size: 1.1rem;">
+        {% if request.GET.search %}
+            No notices found matching your search.
+        {% else %}
+            No notices available. {% if perms.public.add_notice %}<a href="{% url 'dashboard:notice_create' %}">Create the first one!</a>{% endif %}
+        {% endif %}
+    </p>
+</div>
+{% endif %}
+{% endblock %}

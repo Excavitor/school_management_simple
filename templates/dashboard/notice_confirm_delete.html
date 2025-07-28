@@ -1,0 +1,33 @@
+{% extends 'base/dashboard_base.html' %}
+
+{% block title %}Delete Notice - School Management System{% endblock %}
+
+{% block dashboard_content %}
+<div class="card">
+    <h1 style="margin-bottom: 30px; color: #e74c3c;">Delete Notice</h1>
+    
+    <div style="background: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+        <p style="color: #721c24; margin: 0;">
+            <strong>Warning:</strong> This action cannot be undone. The notice will be permanently deleted.
+        </p>
+    </div>
+    
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 30px;">
+        <h3 style="margin-bottom: 15px;">{{ notice.title }}</h3>
+        <p style="color: #666; margin-bottom: 10px;">
+            Created: {{ notice.created_at|date:"F d, Y" }}
+        </p>
+        <p style="color: #666;">
+            {{ notice.content|truncatewords:50 }}
+        </p>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn btn-danger">Yes, Delete Notice</button>
+            <a href="{% url 'dashboard:notice_detail' notice.pk %}" class="btn">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

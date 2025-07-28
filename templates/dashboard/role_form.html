@@ -1,0 +1,107 @@
+{% extends 'base/dashboard_base.html' %}
+
+{% block title %}{{ form_title }} - School Management System{% endblock %}
+
+{% block dashboard_content %}
+<div class="card">
+    <h1 style="margin-bottom: 30px;">{{ form_title }}</h1>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="id_name">Role Name:</label>
+            <input type="text" id="id_name" name="name" value="{% if group %}{{ group.name }}{% endif %}" required 
+                   placeholder="Enter role name (e.g., 'Content Manager', 'Student Advisor')">
+        </div>
+        
+        <div class="form-group">
+            <label>Permissions:</label>
+            <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 15px; border-radius: 5px; max-height: 400px; overflow-y: auto;">
+                <div style="margin-bottom: 15px;">
+                    <label style="font-weight: normal;">
+                        <input type="checkbox" id="select-all" style="margin-right: 8px;">
+                        <strong>Select All Permissions</strong>
+                    </label>
+                </div>
+                
+                {% regroup permissions by content_type as grouped_permissions %}
+                {% for content_type_group in grouped_permissions %}
+                    <div style="margin-bottom: 20px; border: 1px solid #e9ecef; border-radius: 5px; padding: 15px; background: white;">
+                        <h4 style="margin-bottom: 10px; color: #2c3e50; font-size: 1rem;">
+                            {{ content_type_group.grouper.app_label|title }} - {{ content_type_group.grouper.model|title }}
+                        </h4>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px;">
+                            {% for permission in content_type_group.list %}
+                                <label style="font-weight: normal; display: flex; align-items: center;">
+                                    <input type="checkbox" name="permissions" value="{{ permission.id }}" 
+                                           {% if group and permission in group.permissions.all %}checked{% endif %}
+                                           style="margin-right: 8px;">
+                                    <span style="font-size: 0.9rem;">{{ permission.name }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div style="background: #d1ecf1; border: 1px solid #bee5eb; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                <p style="color: #0c5460; margin: 0; font-size: 0.9rem;">
+                    <strong>Tip:</strong> Select only the permissions that users with this role should have. 
+                    Common combinations include view + add, or view + add + change for content management roles.
+                </p>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 30px;">
+            <button type="submit" class="btn btn-success">
+                {% if group %}Update Role{% else %}Create Role{% endif %}
+            </button>
+            <a href="{% url 'dashboard:role_management' %}" class="btn">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('select-all');
+    const permissionCheckboxes = document.querySelectorAll('input[name="permissions"]');
+    
+    // Select/deselect all functionality
+    selectAllCheckbox.addEventListener('change', function() {
+        permissionCheckboxes.forEach(checkbox => {
+            checkbox.checked = selectAllCheckbox.checked;
+        });
+    });
+    
+    // Update select all checkbox based on individual selections
+    permissionCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const checkedCount = document.querySelectorAll('input[name="permissions"]:checked').length;
+            const totalCount = permissionCheckboxes.length;
+            
+            if (checkedCount === 0) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = false;
+            } else if (checkedCount === totalCount) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = true;
+            } else {
+                selectAllCheckbox.indeterminate = true;
+            }
+        });
+    });
+    
+    // Initialize select all checkbox state
+    const initialCheckedCount = document.querySelectorAll('input[name="permissions"]:checked').length;
+    const totalCount = permissionCheckboxes.length;
+    
+    if (initialCheckedCount === totalCount && totalCount > 0) {
+        selectAllCheckbox.checked = true;
+    } else if (initialCheckedCount > 0) {
+        selectAllCheckbox.indeterminate = true;
+    }
+});
+</script>
+{% endblock %}

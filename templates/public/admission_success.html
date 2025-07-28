@@ -1,0 +1,30 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Application Submitted - School Management System{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 50px auto; text-align: center;">
+    <div style="color: #27ae60; font-size: 4rem; margin-bottom: 20px;">✓</div>
+    
+    <h1 style="color: #27ae60; margin-bottom: 20px;">Application Submitted Successfully!</h1>
+    
+    <p style="font-size: 1.1rem; color: #666; margin-bottom: 30px;">
+        Thank you for your interest in our school. Your admission application has been received and will be reviewed by our admissions team.
+    </p>
+    
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 30px;">
+        <h3 style="color: #2c3e50; margin-bottom: 15px;">What's Next?</h3>
+        <ul style="text-align: left; color: #666;">
+            <li style="margin-bottom: 10px;">Our admissions team will review your application</li>
+            <li style="margin-bottom: 10px;">You will receive an email confirmation within 24 hours</li>
+            <li style="margin-bottom: 10px;">We will contact you within 5-7 business days regarding the next steps</li>
+            <li>If you have any questions, please contact our admissions office</li>
+        </ul>
+    </div>
+    
+    <div>
+        <a href="{% url 'public:home' %}" class="btn" style="margin-right: 10px;">Back to Home</a>
+        <a href="{% url 'public:notice_list' %}" class="btn">View Notices</a>
+    </div>
+</div>
+{% endblock %}

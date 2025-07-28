@@ -1,0 +1,86 @@
+{% extends 'base/dashboard_base.html' %}
+
+{% block title %}Delete User - {{ object.email }} - School Management System{% endblock %}
+
+{% block dashboard_content %}
+<div class="card">
+    <h1 style="margin-bottom: 30px; color: #e74c3c;">Delete User</h1>
+    
+    <div style="background: #f8d7da; border: 1px solid #f5c6cb; padding: 20px; border-radius: 5px; margin-bottom: 30px;">
+        <h3 style="color: #721c24; margin-bottom: 15px;">⚠️ Warning</h3>
+        <p style="color: #721c24; margin: 0;">
+            You are about to permanently delete the user account for <strong>{{ object.email }}</strong>. 
+            This action cannot be undone.
+        </p>
+    </div>
+    
+    <div style="background: white; border: 1px solid #ddd; padding: 20px; border-radius: 5px; margin-bottom: 30px;">
+        <h3 style="margin-bottom: 15px; color: #2c3e50;">User Information</h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <p><strong>Email:</strong> {{ object.email }}</p>
+                <p><strong>Name:</strong> 
+                    {% if object.first_name or object.last_name %}
+                        {{ object.first_name }} {{ object.last_name }}
+                    {% else %}
+                        <em>Not provided</em>
+                    {% endif %}
+                </p>
+                <p><strong>Phone:</strong> 
+                    {% if object.phone %}
+                        {{ object.phone }}
+                    {% else %}
+                        <em>Not provided</em>
+                    {% endif %}
+                </p>
+            </div>
+            
+            <div>
+                <p><strong>Date Joined:</strong> {{ object.date_joined|date:"F d, Y" }}</p>
+                <p><strong>Status:</strong> 
+                    {% if object.is_active %}
+                        <span style="color: #27ae60;">Active</span>
+                    {% else %}
+                        <span style="color: #e74c3c;">Inactive</span>
+                    {% endif %}
+                </p>
+                <p><strong>Roles:</strong>
+                    {% if object.groups.exists %}
+                        {% for group in object.groups.all %}
+                            <span style="background: #3498db; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8rem; margin-right: 3px;">
+                                {{ group.name }}
+                            </span>
+                        {% endfor %}
+                    {% else %}
+                        <em>No roles assigned</em>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin-bottom: 30px;">
+        <p style="color: #856404; margin: 0;">
+            <strong>What will happen:</strong>
+        </p>
+        <ul style="color: #856404; margin: 10px 0 0 20px;">
+            <li>The user account will be permanently deleted</li>
+            <li>All role assignments will be removed</li>
+            <li>The user will no longer be able to log in</li>
+            <li>This action cannot be reversed</li>
+        </ul>
+    </div>
+    
+    <form method="post" style="display: inline;">
+        {% csrf_token %}
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn btn-danger">
+                Yes, Delete User
+            </button>
+            <a href="{% url 'dashboard:user_detail' object.pk %}" class="btn">Cancel</a>
+            <a href="{% url 'dashboard:user_management' %}" class="btn">Back to Users</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

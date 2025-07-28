@@ -1,0 +1,81 @@
+{% extends 'base/dashboard_base.html' %}
+
+{% block title %}{{ admissionapplication.first_name }} {{ admissionapplication.last_name }} - Admission Application{% endblock %}
+
+{% block dashboard_content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 30px;">
+        <div>
+            <h1 style="margin-bottom: 10px;">Admission Application</h1>
+            <p style="color: #666;">Submitted on {{ admissionapplication.created_at|date:"F d, Y g:i A" }}</p>
+        </div>
+        
+        {% if perms.public.delete_admissionapplication %}
+        <div>
+            <a href="{% url 'dashboard:admission_delete' admissionapplication.pk %}" class="btn btn-danger">Delete Application</a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+        <div>
+            <h3 style="margin-bottom: 20px; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">Student Information</h3>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Name:</strong> {{ admissionapplication.first_name }} {{ admissionapplication.last_name }}
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Email:</strong> {{ admissionapplication.email }}
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Phone:</strong> {{ admissionapplication.phone }}
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Date of Birth:</strong> {{ admissionapplication.date_of_birth|date:"F d, Y" }}
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Gender:</strong> {{ admissionapplication.get_gender_display }}
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Grade Applying For:</strong> {{ admissionapplication.grade_applying_for }}
+            </div>
+            
+            {% if admissionapplication.previous_school %}
+            <div style="margin-bottom: 15px;">
+                <strong>Previous School:</strong> {{ admissionapplication.previous_school }}
+            </div>
+            {% endif %}
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Address:</strong><br>
+                {{ admissionapplication.address|linebreaks }}
+            </div>
+        </div>
+        
+        <div>
+            <h3 style="margin-bottom: 20px; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">Parent/Guardian Information</h3>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Name:</strong> {{ admissionapplication.parent_name }}
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Phone:</strong> {{ admissionapplication.parent_phone }}
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Email:</strong> {{ admissionapplication.parent_email }}
+            </div>
+        </div>
+    </div>
+    
+    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
+        <a href="{% url 'dashboard:admission_management' %}" class="btn">← Back to Applications</a>
+    </div>
+</div>
+{% endblock %}

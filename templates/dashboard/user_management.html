@@ -1,0 +1,129 @@
+{% extends 'base/dashboard_base.html' %}
+
+{% block title %}User Management - School Management System{% endblock %}
+
+{% block dashboard_content %}
+<div class="card">
+    <h1 style="margin-bottom: 20px;">User Management</h1>
+    
+    {% if perms.auth.add_user %}
+    <div class="actions">
+        <a href="{% url 'dashboard:user_create' %}" class="btn btn-success">Create New User</a>
+    </div>
+    {% endif %}
+    
+    <div class="filters">
+        <form method="get">
+            <div class="form-group">
+                <label for="search">Search:</label>
+                <input type="text" id="search" name="search" placeholder="Search by name or email..." value="{{ request.GET.search }}">
+            </div>
+            <div class="form-group">
+                <label for="role">Role:</label>
+                <select id="role" name="role">
+                    <option value="">All Roles</option>
+                    {% for group in groups %}
+                        <option value="{{ group.id }}" {% if request.GET.role == group.id|stringformat:"s" %}selected{% endif %}>
+                            {{ group.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn">Filter</button>
+            {% if request.GET.search or request.GET.role %}
+                <a href="{% url 'dashboard:user_management' %}" class="btn">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+{% if users %}
+<div class="card">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Email</th>
+                <th>Roles</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>
+                    <strong>{{ user.first_name }} {{ user.last_name }}</strong>
+                    {% if user.is_superuser %}
+                        <br><small style="color: #e74c3c; font-weight: bold;">SUPERUSER</small>
+                    {% elif user.is_staff %}
+                        <br><small style="color: #f39c12; font-weight: bold;">STAFF</small>
+                    {% endif %}
+                </td>
+                <td>{{ user.email }}</td>
+                <td>
+                    {% if user.groups.exists %}
+                        {% for group in user.groups.all %}
+                            <span style="background: #3498db; color: white; padding: 2px 8px; border-radius: 3px; font-size: 0.8rem; margin-right: 5px;">
+                                {{ group.name }}
+                            </span>
+                        {% endfor %}
+                    {% else %}
+                        <em style="color: #666;">No roles assigned</em>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if user.is_active %}
+                        <span style="color: #27ae60; font-weight: bold;">Active</span>
+                    {% else %}
+                        <span style="color: #e74c3c; font-weight: bold;">Inactive</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="display: flex; gap: 5px;">
+                        {% if perms.auth.view_user %}
+                            <a href="{% url 'dashboard:user_detail' user.pk %}" class="btn" style="padding: 5px 10px; font-size: 0.8rem;">View</a>
+                        {% endif %}
+                        {% if perms.auth.change_user %}
+                            <a href="{% url 'dashboard:user_update' user.pk %}" class="btn" style="padding: 5px 10px; font-size: 0.8rem;">Edit</a>
+                        {% endif %}
+                        {% if perms.auth.delete_user and not user.is_superuser and user != request.user %}
+                            <a href="{% url 'dashboard:user_delete' user.pk %}" class="btn btn-danger" style="padding: 5px 10px; font-size: 0.8rem;">Delete</a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {% if is_paginated %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}">&laquo; First</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}">Previous</a>
+        {% endif %}
+        
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+        
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}">Next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}">Last &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% else %}
+<div class="card">
+    <p style="text-align: center; color: #666; font-size: 1.1rem;">
+        {% if request.GET.search or request.GET.role %}
+            No users found matching your criteria.
+        {% else %}
+            No users found.
+        {% endif %}
+    </p>
+</div>
+{% endif %}
+{% endblock %}
