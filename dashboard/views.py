@@ -31,8 +31,18 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # Check user permissions for sidebar
         context['can_view_notices'] = user.has_perm('public.view_notice')
         context['can_view_admissions'] = user.has_perm('public.view_admissionapplication')
-        context['can_manage_roles'] = user.is_superuser or user.has_perm('auth.change_user')
-        context['can_manage_users'] = user.is_superuser or user.has_perm('auth.view_user')
+        context['can_manage_roles'] = (
+            user.has_perm('auth.view_group') or 
+            user.has_perm('auth.add_group') or 
+            user.has_perm('auth.change_group') or 
+            user.has_perm('auth.delete_group')
+        )
+        context['can_manage_users'] = (
+            user.has_perm('accounts.view_user') or 
+            user.has_perm('accounts.add_user') or 
+            user.has_perm('accounts.change_user') or 
+            user.has_perm('accounts.delete_user')
+        )
         
         return context
 
@@ -172,14 +182,9 @@ class AdmissionDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteVie
 
 
 # Role Management Views
-class RoleManagementView(LoginRequiredMixin, TemplateView):
+class RoleManagementView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
     template_name = 'dashboard/role_management.html'
-    
-    def dispatch(self, request, *args, **kwargs):
-        if not (request.user.is_superuser or request.user.has_perm('auth.change_user')):
-            messages.error(request, 'You do not have permission to access this page.')
-            return redirect('dashboard:dashboard')
-        return super().dispatch(request, *args, **kwargs)
+    permission_required = 'auth.view_group'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -188,14 +193,9 @@ class RoleManagementView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class UserRoleUpdateView(LoginRequiredMixin, TemplateView):
+class UserRoleUpdateView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
     template_name = 'dashboard/user_role_update.html'
-    
-    def dispatch(self, request, *args, **kwargs):
-        if not (request.user.is_superuser or request.user.has_perm('auth.change_user')):
-            messages.error(request, 'You do not have permission to access this page.')
-            return redirect('dashboard:dashboard')
-        return super().dispatch(request, *args, **kwargs)
+    permission_required = 'auth.change_group'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -221,7 +221,7 @@ class UserManagementView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     model = User
     template_name = 'dashboard/user_management.html'
     context_object_name = 'users'
-    permission_required = 'auth.view_user'
+    permission_required = 'accounts.view_user'
     paginate_by = 20
     
     def get_queryset(self):
@@ -251,7 +251,7 @@ class UserCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     model = User
     template_name = 'dashboard/user_form.html'
     fields = ['email', 'first_name', 'last_name', 'phone', 'is_staff']
-    permission_required = 'auth.add_user'
+    permission_required = 'accounts.add_user'
     success_url = reverse_lazy('dashboard:user_management')
     
     def form_valid(self, form):
@@ -266,14 +266,14 @@ class UserCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
 class UserDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
     model = User
     template_name = 'dashboard/user_detail.html'
-    permission_required = 'auth.view_user'
+    permission_required = 'accounts.view_user'
 
 
 class UserUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = User
     template_name = 'dashboard/user_form.html'
     fields = ['email', 'first_name', 'last_name', 'phone', 'is_staff', 'is_active']
-    permission_required = 'auth.change_user'
+    permission_required = 'accounts.change_user'
     success_url = reverse_lazy('dashboard:user_management')
     
     def form_valid(self, form):
@@ -284,7 +284,7 @@ class UserUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
 class UserDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = User
     template_name = 'dashboard/user_confirm_delete.html'
-    permission_required = 'auth.delete_user'
+    permission_required = 'accounts.delete_user'
     success_url = reverse_lazy('dashboard:user_management')
     
     def dispatch(self, request, *args, **kwargs):
@@ -306,14 +306,9 @@ class UserDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
 
 
 # Enhanced Role Management Views with CRUD operations
-class RoleCreateView(LoginRequiredMixin, TemplateView):
+class RoleCreateView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
     template_name = 'dashboard/role_form.html'
-    
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_superuser:
-            messages.error(request, 'Only superadmins can create roles.')
-            return redirect('dashboard:role_management')
-        return super().dispatch(request, *args, **kwargs)
+    permission_required = 'auth.add_group'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -345,14 +340,9 @@ class RoleCreateView(LoginRequiredMixin, TemplateView):
         return redirect('dashboard:role_management')
 
 
-class RoleUpdateView(LoginRequiredMixin, TemplateView):
+class RoleUpdateView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
     template_name = 'dashboard/role_form.html'
-    
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_superuser:
-            messages.error(request, 'Only superadmins can edit roles.')
-            return redirect('dashboard:role_management')
-        return super().dispatch(request, *args, **kwargs)
+    permission_required = 'auth.change_group'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -390,14 +380,9 @@ class RoleUpdateView(LoginRequiredMixin, TemplateView):
         return redirect('dashboard:role_management')
 
 
-class RoleDeleteView(LoginRequiredMixin, TemplateView):
+class RoleDeleteView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
     template_name = 'dashboard/role_confirm_delete.html'
-    
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_superuser:
-            messages.error(request, 'Only superadmins can delete roles.')
-            return redirect('dashboard:role_management')
-        return super().dispatch(request, *args, **kwargs)
+    permission_required = 'auth.delete_group'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

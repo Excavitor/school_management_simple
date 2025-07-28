@@ -6,7 +6,7 @@
 <div class="card">
     <h1 style="margin-bottom: 20px;">User Management</h1>
     
-    {% if perms.auth.add_user %}
+    {% if perms.accounts.add_user %}
     <div class="actions">
         <a href="{% url 'dashboard:user_create' %}" class="btn btn-success">Create New User</a>
     </div>
@@ -81,13 +81,13 @@
                 </td>
                 <td>
                     <div style="display: flex; gap: 5px;">
-                        {% if perms.auth.view_user %}
+                        {% if perms.accounts.view_user %}
                             <a href="{% url 'dashboard:user_detail' user.pk %}" class="btn" style="padding: 5px 10px; font-size: 0.8rem;">View</a>
                         {% endif %}
-                        {% if perms.auth.change_user %}
+                        {% if perms.accounts.change_user %}
                             <a href="{% url 'dashboard:user_update' user.pk %}" class="btn" style="padding: 5px 10px; font-size: 0.8rem;">Edit</a>
                         {% endif %}
-                        {% if perms.auth.delete_user and not user.is_superuser and user != request.user %}
+                        {% if perms.accounts.delete_user and not user.is_superuser and user != request.user %}
                             <a href="{% url 'dashboard:user_delete' user.pk %}" class="btn btn-danger" style="padding: 5px 10px; font-size: 0.8rem;">Delete</a>
                         {% endif %}
                     </div>

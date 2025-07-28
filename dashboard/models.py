@@ -1,3 +1,4 @@
 from django.db import models
 
-# Create your models here.
+# No custom models needed - we'll use Django's built-in Group model permissions
+# for role management instead of custom permissions

@@ -8,12 +8,12 @@
     
     <div style="background: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 5px; margin-bottom: 30px;">
         <p style="color: #0c5460; margin: 0;">
-            <strong>Note:</strong> Only superadmins can manage roles and assign them to users. 
+            <strong>Note:</strong> Role management is permission-controlled. 
             Roles are based on Django's built-in Group and Permission system.
         </p>
     </div>
     
-    {% if user.is_superuser %}
+    {% if perms.auth.add_group %}
     <div class="actions">
         <a href="{% url 'dashboard:role_create' %}" class="btn btn-success">Create New Role</a>
     </div>
@@ -30,7 +30,7 @@
                 <th>Role Name</th>
                 <th>Permissions</th>
                 <th>Users Count</th>
-                {% if user.is_superuser %}
+                {% if perms.auth.change_group or perms.auth.delete_group %}
                 <th>Actions</th>
                 {% endif %}
             </tr>
@@ -57,11 +57,15 @@
                         {{ group.user_set.count }}
                     </span>
                 </td>
-                {% if user.is_superuser %}
+                {% if perms.auth.change_group or perms.auth.delete_group %}
                 <td>
                     <div style="display: flex; gap: 5px;">
+                        {% if perms.auth.change_group %}
                         <a href="{% url 'dashboard:role_update' group.pk %}" class="btn" style="padding: 5px 10px; font-size: 0.8rem;">Edit</a>
+                        {% endif %}
+                        {% if perms.auth.delete_group %}
                         <a href="{% url 'dashboard:role_delete' group.pk %}" class="btn btn-danger" style="padding: 5px 10px; font-size: 0.8rem;">Delete</a>
+                        {% endif %}
                     </div>
                 </td>
                 {% endif %}
@@ -72,7 +76,7 @@
     {% else %}
     <p style="text-align: center; color: #666;">
         No roles have been created yet. 
-        {% if user.is_superuser %}
+        {% if perms.auth.add_group %}
             <a href="{% url 'dashboard:role_create' %}">Create the first role</a>.
         {% else %}
             Contact your administrator to create roles.
@@ -115,12 +119,16 @@
                     {% endif %}
                 </td>
                 <td>
-                    {% if not user.is_superuser or request.user.is_superuser %}
-                        <a href="{% url 'dashboard:user_role_update' user.pk %}" class="btn" style="padding: 5px 10px; font-size: 0.8rem;">
-                            Manage Roles
-                        </a>
+                    {% if perms.auth.change_group %}
+                        {% if not user.is_superuser or request.user.is_superuser %}
+                            <a href="{% url 'dashboard:user_role_update' user.pk %}" class="btn" style="padding: 5px 10px; font-size: 0.8rem;">
+                                Manage Roles
+                            </a>
+                        {% else %}
+                            <em style="color: #666; font-size: 0.8rem;">Protected</em>
+                        {% endif %}
                     {% else %}
-                        <em style="color: #666; font-size: 0.8rem;">Protected</em>
+                        <em style="color: #666; font-size: 0.8rem;">No permission</em>
                     {% endif %}
                 </td>
             </tr>

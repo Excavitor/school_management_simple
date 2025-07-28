@@ -163,21 +163,27 @@
         </ul>
         {% endif %}
         
-        {% if user.is_superuser or perms.auth.view_user %}
+        {% if perms.accounts.view_user or perms.accounts.add_user or perms.accounts.change_user or perms.accounts.delete_user %}
         <h3>User Management</h3>
         <ul>
+            {% if perms.accounts.view_user %}
             <li><a href="{% url 'dashboard:user_management' %}" {% if 'user' in request.resolver_match.url_name %}class="active"{% endif %}>View Users</a></li>
-            {% if perms.auth.add_user %}
+            {% endif %}
+            {% if perms.accounts.add_user %}
             <li><a href="{% url 'dashboard:user_create' %}">Create User</a></li>
             {% endif %}
         </ul>
         {% endif %}
         
-        {% if user.is_superuser %}
+        {% if perms.auth.view_group or perms.auth.add_group or perms.auth.change_group or perms.auth.delete_group %}
         <h3>Role Management</h3>
         <ul>
+            {% if perms.auth.view_group %}
             <li><a href="{% url 'dashboard:role_management' %}" {% if 'role' in request.resolver_match.url_name %}class="active"{% endif %}>Manage Roles</a></li>
+            {% endif %}
+            {% if perms.auth.add_group %}
             <li><a href="{% url 'dashboard:role_create' %}">Create Role</a></li>
+            {% endif %}
         </ul>
         {% endif %}
     </aside>

@@ -31,18 +31,24 @@ def create_sample_data():
     # Create groups and permissions
     notice_ct = ContentType.objects.get_for_model(Notice)
     admission_ct = ContentType.objects.get_for_model(AdmissionApplication)
+    user_ct = ContentType.objects.get_for_model(User)
+    group_ct = ContentType.objects.get_for_model(Group)
+    
+    # Get permissions for each content type
+    notice_permissions = Permission.objects.filter(content_type=notice_ct)
+    admission_permissions = Permission.objects.filter(content_type=admission_ct)
+    user_permissions = Permission.objects.filter(content_type=user_ct)
+    group_permissions = Permission.objects.filter(content_type=group_ct)
     
     # Notice Manager Group
     notice_group, created = Group.objects.get_or_create(name='Notice Manager')
     if created:
-        notice_permissions = Permission.objects.filter(content_type=notice_ct)
         notice_group.permissions.set(notice_permissions)
         print("✓ Created Notice Manager group")
     
     # Admission Manager Group
     admission_group, created = Group.objects.get_or_create(name='Admission Manager')
     if created:
-        admission_permissions = Permission.objects.filter(content_type=admission_ct)
         admission_group.permissions.set(admission_permissions)
         print("✓ Created Admission Manager group")
     
@@ -52,6 +58,25 @@ def create_sample_data():
         all_permissions = list(notice_permissions) + list(admission_permissions)
         full_group.permissions.set(all_permissions)
         print("✓ Created Full Manager group")
+    
+    # User Manager Group (can manage users)
+    user_group, created = Group.objects.get_or_create(name='User Manager')
+    if created or not user_group.permissions.exists():
+        user_group.permissions.set(user_permissions)
+        print("✓ Created/Updated User Manager group")
+    
+    # Role Manager Group (can manage roles using Group permissions)
+    role_group, created = Group.objects.get_or_create(name='Role Manager')
+    if created or not role_group.permissions.exists():
+        role_group.permissions.set(group_permissions)
+        print("✓ Created/Updated Role Manager group")
+    
+    # Super Manager Group (can manage both users and roles)
+    super_group, created = Group.objects.get_or_create(name='Super Manager')
+    if created or not super_group.permissions.exists():
+        super_permissions = list(user_permissions) + list(group_permissions)
+        super_group.permissions.set(super_permissions)
+        print("✓ Created/Updated Super Manager group")
     
     # Create sample users
     users_data = [
@@ -75,6 +100,27 @@ def create_sample_data():
             'first_name': 'Full',
             'last_name': 'Manager',
             'groups': ['Full Manager']
+        },
+        {
+            'email': 'user.manager@school.com',
+            'password': 'password123',
+            'first_name': 'User',
+            'last_name': 'Manager',
+            'groups': ['User Manager']
+        },
+        {
+            'email': 'role.manager@school.com',
+            'password': 'password123',
+            'first_name': 'Role',
+            'last_name': 'Manager',
+            'groups': ['Role Manager']
+        },
+        {
+            'email': 'super.manager@school.com',
+            'password': 'password123',
+            'first_name': 'Super',
+            'last_name': 'Manager',
+            'groups': ['Super Manager']
         },
         {
             'email': 'regular.user@school.com',
@@ -188,6 +234,9 @@ def create_sample_data():
     print("Notice Manager: notice.manager@school.com / password123")
     print("Admission Manager: admission.manager@school.com / password123")
     print("Full Manager: full.manager@school.com / password123")
+    print("User Manager: user.manager@school.com / password123")
+    print("Role Manager: role.manager@school.com / password123")
+    print("Super Manager: super.manager@school.com / password123")
     print("Regular User: regular.user@school.com / password123")
 
 if __name__ == '__main__':

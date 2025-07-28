@@ -122,10 +122,10 @@
         {% if perms.auth.change_user %}
             <a href="{% url 'dashboard:user_update' object.pk %}" class="btn">Edit User</a>
         {% endif %}
-        {% if user.is_superuser or perms.auth.change_user %}
+        {% if perms.dashboard.change_role %}
             <a href="{% url 'dashboard:user_role_update' object.pk %}" class="btn">Manage Roles</a>
         {% endif %}
-        {% if perms.auth.delete_user and not object.is_superuser and object != request.user %}
+        {% if perms.accounts.delete_user and not object.is_superuser and object != request.user %}
             <a href="{% url 'dashboard:user_delete' object.pk %}" class="btn btn-danger">Delete User</a>
         {% endif %}
         <a href="{% url 'dashboard:user_management' %}" class="btn">Back to Users</a>
