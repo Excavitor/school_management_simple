@@ -1,3 +1,6 @@
+## 🚀 Live Demo
+- 🌐 Click to Visit: [School Management System Website](https://school-management-simple.onrender.com/)
+
 ## .env file
 ```bash
 DEBUG=True
