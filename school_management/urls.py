@@ -21,6 +21,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('djoser.urls')),
     path('api/auth/', include('djoser.urls.jwt')),
+    # API endpoints - new architecture layer
+    path('api/public/', include('public.api_urls')),
+    path('api/dashboard/', include('dashboard.api_urls')),
+    # Traditional web routes (to be gradually migrated to API consumption)
     path('accounts/', include('accounts.urls')),
     path('dashboard/', include('dashboard.urls')),
     path('', include('public.urls')),

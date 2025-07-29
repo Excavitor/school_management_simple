@@ -6,15 +6,16 @@
 <div class="card">
     <h1 style="margin-bottom: 30px;">Dashboard Overview</h1>
     
+    <!-- Dashboard stats using simple template context -->
     <div class="stats-grid">
         <div class="stat-card">
-            <h3>{{ notice_count }}</h3>
+            <h3>{{ notice_count|default:"0" }}</h3>
             <p>Active Notices</p>
         </div>
         
-        {% if admission_count is not None %}
+        {% if perms.public.view_admissionapplication %}
         <div class="stat-card">
-            <h3>{{ admission_count }}</h3>
+            <h3>{{ admission_count|default:"0" }}</h3>
             <p>Admission Applications</p>
         </div>
         {% endif %}
@@ -46,24 +47,25 @@
     {% endif %}
     
     <h3 style="margin-bottom: 15px;">Quick Actions</h3>
+    <!-- Quick actions based on user permissions -->
     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        {% if can_view_notices %}
-            <a href="{% url 'dashboard:notice_management' %}" class="btn">Manage Notices</a>
-        {% endif %}
-        
-        {% if can_view_admissions %}
-            <a href="{% url 'dashboard:admission_management' %}" class="btn">View Applications</a>
-        {% endif %}
-        
-        {% if can_manage_users %}
-            <a href="{% url 'dashboard:user_management' %}" class="btn">Manage Users</a>
-        {% endif %}
-        
-        {% if can_manage_roles %}
-            <a href="{% url 'dashboard:role_management' %}" class="btn">Manage Roles</a>
-        {% endif %}
-        
         <a href="{% url 'public:home' %}" class="btn">View Public Site</a>
+        
+        {% if perms.public.view_notice %}
+        <a href="{% url 'dashboard:notice_management' %}" class="btn">Manage Notices</a>
+        {% endif %}
+        
+        {% if perms.public.view_admissionapplication %}
+        <a href="{% url 'dashboard:admission_management' %}" class="btn">View Applications</a>
+        {% endif %}
+        
+        {% if perms.accounts.view_user %}
+        <a href="{% url 'dashboard:user_management' %}" class="btn">Manage Users</a>
+        {% endif %}
+        
+        {% if perms.auth.view_group %}
+        <a href="{% url 'dashboard:role_management' %}" class="btn">Manage Roles</a>
+        {% endif %}
     </div>
 </div>
 

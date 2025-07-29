@@ -15,48 +15,93 @@
     </form>
 </div>
 
-{% if notices %}
-    {% for notice in notices %}
-    <div class="card">
-        <h2 style="color: #3498db; margin-bottom: 10px;">{{ notice.title }}</h2>
-        <p style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">
-            Published on {{ notice.created_at|date:"F d, Y" }}
-            {% if notice.updated_at != notice.created_at %}
-                (Updated: {{ notice.updated_at|date:"F d, Y" }})
-            {% endif %}
-        </p>
-        <div style="line-height: 1.6;">
-            {{ notice.content|linebreaks }}
-        </div>
+<!-- Notices loaded via API - replaces direct template data -->
+<div id="notices-container">
+    <div id="loading-message" class="card">
+        <p style="text-align: center; color: #666;">Loading notices...</p>
     </div>
-    {% endfor %}
+</div>
+
+<div id="pagination-container"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Load notices via API - replaces server-side template data
+document.addEventListener('DOMContentLoaded', async function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchTerm = urlParams.get('search') || '';
     
-    {% if is_paginated %}
-    <div class="pagination">
-        {% if page_obj.has_previous %}
-            <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">&laquo; First</a>
-            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
-        {% endif %}
+    // Update search input with current value
+    const searchInput = document.querySelector('input[name="search"]');
+    if (searchInput) {
+        searchInput.value = searchTerm;
+    }
+    
+    await loadNotices({ search: searchTerm });
+});
+
+async function loadNotices(params = {}) {
+    const container = document.getElementById('notices-container');
+    const loadingMessage = document.getElementById('loading-message');
+    
+    try {
+        const response = await apiClient.getNotices(params);
+        const notices = response.results || response;
         
-        <span class="current">
-            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-        </span>
+        loadingMessage.style.display = 'none';
         
-        {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
-            <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Last &raquo;</a>
-        {% endif %}
-    </div>
-    {% endif %}
-{% else %}
-    <div class="card">
-        <p style="text-align: center; color: #666; font-size: 1.1rem;">
-            {% if request.GET.search %}
-                No notices found matching your search.
-            {% else %}
-                No notices available at the moment.
-            {% endif %}
-        </p>
-    </div>
-{% endif %}
+        if (notices && notices.length > 0) {
+            container.innerHTML = notices.map(notice => `
+                <div class="card">
+                    <h2 style="color: #3498db; margin-bottom: 10px;">${notice.title}</h2>
+                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">
+                        Published on ${new Date(notice.created_at).toLocaleDateString('en-US', { 
+                            year: 'numeric', month: 'long', day: 'numeric' 
+                        })}
+                    </p>
+                    <div style="line-height: 1.6;">
+                        ${notice.content.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = `
+                <div class="card">
+                    <p style="text-align: center; color: #666; font-size: 1.1rem;">
+                        ${params.search ? 'No notices found matching your search.' : 'No notices available at the moment.'}
+                    </p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Failed to load notices:', error);
+        container.innerHTML = `
+            <div class="card">
+                <p style="text-align: center; color: #e74c3c;">
+                    Failed to load notices. Please try again later.
+                </p>
+            </div>
+        `;
+    }
+}
+
+// Handle search form submission
+document.querySelector('.search-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const searchTerm = this.querySelector('input[name="search"]').value;
+    
+    // Update URL without page reload
+    const url = new URL(window.location);
+    if (searchTerm) {
+        url.searchParams.set('search', searchTerm);
+    } else {
+        url.searchParams.delete('search');
+    }
+    window.history.pushState({}, '', url);
+    
+    // Load notices with new search term
+    loadNotices({ search: searchTerm });
+});
+</script>
 {% endblock %}

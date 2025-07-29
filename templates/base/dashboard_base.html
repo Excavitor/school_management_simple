@@ -143,6 +143,7 @@
             <li><a href="{% url 'dashboard:dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}class="active"{% endif %}>Overview</a></li>
         </ul>
         
+        <!-- Sidebar navigation based on user permissions - Simple HTML approach -->
         {% if perms.public.view_notice %}
         <h3>Notices</h3>
         <ul>
@@ -163,28 +164,31 @@
         </ul>
         {% endif %}
         
-        {% if perms.accounts.view_user or perms.accounts.add_user or perms.accounts.change_user or perms.accounts.delete_user %}
+        {% if perms.accounts.view_user %}
         <h3>User Management</h3>
         <ul>
-            {% if perms.accounts.view_user %}
-            <li><a href="{% url 'dashboard:user_management' %}" {% if 'user' in request.resolver_match.url_name %}class="active"{% endif %}>View Users</a></li>
-            {% endif %}
+            <li><a href="{% url 'dashboard:user_management' %}" {% if 'user' in request.resolver_match.url_name and 'role' not in request.resolver_match.url_name %}class="active"{% endif %}>View Users</a></li>
             {% if perms.accounts.add_user %}
             <li><a href="{% url 'dashboard:user_create' %}">Create User</a></li>
             {% endif %}
         </ul>
         {% endif %}
         
-        {% if perms.auth.view_group or perms.auth.add_group or perms.auth.change_group or perms.auth.delete_group %}
+        {% if perms.auth.view_group %}
         <h3>Role Management</h3>
         <ul>
-            {% if perms.auth.view_group %}
             <li><a href="{% url 'dashboard:role_management' %}" {% if 'role' in request.resolver_match.url_name %}class="active"{% endif %}>Manage Roles</a></li>
-            {% endif %}
             {% if perms.auth.add_group %}
             <li><a href="{% url 'dashboard:role_create' %}">Create Role</a></li>
             {% endif %}
         </ul>
+        {% endif %}
+        
+        {% if not perms.public.view_notice and not perms.public.view_admissionapplication and not perms.accounts.view_user and not perms.auth.view_group %}
+        <div style="text-align: center; color: #666; padding: 20px; font-style: italic;">
+            No management permissions assigned.<br>
+            Contact your administrator for access.
+        </div>
         {% endif %}
     </aside>
     
@@ -192,4 +196,8 @@
         {% block dashboard_content %}{% endblock %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
 {% endblock %}

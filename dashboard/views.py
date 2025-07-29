@@ -19,30 +19,12 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        user = self.request.user
-        
-        # Basic stats for all users
+        # Simple stats for dashboard - no API dependency needed
         context['notice_count'] = Notice.objects.filter(is_active=True).count()
         
-        # Additional stats for users with permissions
-        if user.has_perm('public.view_admissionapplication'):
+        # Only show admission count if user has permission
+        if self.request.user.has_perm('public.view_admissionapplication'):
             context['admission_count'] = AdmissionApplication.objects.count()
-        
-        # Check user permissions for sidebar
-        context['can_view_notices'] = user.has_perm('public.view_notice')
-        context['can_view_admissions'] = user.has_perm('public.view_admissionapplication')
-        context['can_manage_roles'] = (
-            user.has_perm('auth.view_group') or 
-            user.has_perm('auth.add_group') or 
-            user.has_perm('auth.change_group') or 
-            user.has_perm('auth.delete_group')
-        )
-        context['can_manage_users'] = (
-            user.has_perm('accounts.view_user') or 
-            user.has_perm('accounts.add_user') or 
-            user.has_perm('accounts.change_user') or 
-            user.has_perm('accounts.delete_user')
-        )
         
         return context
 
