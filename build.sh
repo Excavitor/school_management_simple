@@ -2,6 +2,9 @@
 # exit on error
 set -o errexit
 
+# Add this line to specify your production settings
+export DJANGO_SETTINGS_MODULE=school_management.settings.prod
+
 # Install dependencies
 pip install -r requirements.txt
 
