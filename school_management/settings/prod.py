@@ -1,17 +1,17 @@
 from .base import *
+import dj_database_url
 
 DEBUG = False
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="yourdomain.com").split(",")
+
+ALLOWED_HOSTS = [config("RENDER_EXTERNAL_HOSTNAME", default="")]
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DATABASE_NAME"),
-        "USER": config("DATABASE_USER"),
-        "PASSWORD": config("DATABASE_PASSWORD"),
-        "HOST": config("DATABASE_HOST"),
-        "PORT": config("DATABASE_PORT"),
-    }
+    "default": dj_database_url.config(
+        # Replace this with your local test DB for migrations
+        default=config("DATABASE_URL"),
+        conn_max_age=600,
+        ssl_require=True
+    )
 }
 
 MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
