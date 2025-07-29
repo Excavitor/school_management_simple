@@ -47,6 +47,21 @@
             {% endif %}
         </div>
         
+        {% if not object %}
+        <div class="form-group">
+            <label for="id_password">Password:</label>
+            <input type="password" id="id_password" name="password" required>
+            <small style="color: #666; display: block; margin-top: 5px;">
+                Password must be at least 8 characters long.
+            </small>
+        </div>
+        
+        <div class="form-group">
+            <label for="id_password_confirm">Confirm Password:</label>
+            <input type="password" id="id_password_confirm" name="password_confirm" required>
+        </div>
+        {% endif %}
+        
         <div style="display: flex; gap: 20px; margin-bottom: 20px;">
             <div class="form-group" style="margin-bottom: 0;">
                 <label>
@@ -71,14 +86,7 @@
             {% endif %}
         </div>
         
-        {% if not object %}
-        <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
-            <p style="color: #856404; margin: 0;">
-                <strong>Note:</strong> New users will be created with the default password "defaultpassword123". 
-                They should change this password upon first login.
-            </p>
-        </div>
-        {% endif %}
+
         
         <div style="display: flex; gap: 10px; margin-top: 30px;">
             <button type="submit" class="btn btn-success">
@@ -88,4 +96,58 @@
         </div>
     </form>
 </div>
+
+{% if not object %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordField = document.getElementById('id_password');
+    const confirmField = document.getElementById('id_password_confirm');
+    const form = document.querySelector('form');
+    
+    function validatePasswords() {
+        const password = passwordField.value;
+        const confirm = confirmField.value;
+        
+        // Remove existing error messages
+        const existingErrors = document.querySelectorAll('.password-error');
+        existingErrors.forEach(error => error.remove());
+        
+        let isValid = true;
+        
+        // Check password length
+        if (password.length > 0 && password.length < 8) {
+            showError(passwordField, 'Password must be at least 8 characters long.');
+            isValid = false;
+        }
+        
+        // Check password match
+        if (confirm.length > 0 && password !== confirm) {
+            showError(confirmField, 'Passwords do not match.');
+            isValid = false;
+        }
+        
+        return isValid;
+    }
+    
+    function showError(field, message) {
+        const error = document.createElement('div');
+        error.className = 'password-error';
+        error.style.color = '#e74c3c';
+        error.style.fontSize = '0.8rem';
+        error.style.marginTop = '5px';
+        error.textContent = message;
+        field.parentNode.appendChild(error);
+    }
+    
+    passwordField.addEventListener('input', validatePasswords);
+    confirmField.addEventListener('input', validatePasswords);
+    
+    form.addEventListener('submit', function(e) {
+        if (!validatePasswords()) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endif %}
 {% endblock %}

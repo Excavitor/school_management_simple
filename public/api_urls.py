@@ -1,9 +1,5 @@
 """
-API ROUTING LAYER
-This file maps URL patterns to API ViewSets.
-It defines which URLs trigger which API operations.
-
-BEGINNER TIP: Read this file AFTER api_views.py to understand URL patterns.
+API URL routing for public app endpoints.
 """
 from rest_framework.routers import DefaultRouter
 from .api_views import NoticeViewSet, AdmissionApplicationViewSet

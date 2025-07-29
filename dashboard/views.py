@@ -5,11 +5,11 @@ from django.views.generic import (
 )
 from django.urls import reverse_lazy
 from django.contrib import messages
-from django.db.models import Q
 from django.contrib.auth.models import Group, Permission
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from public.models import Notice, AdmissionApplication
+from public.utils import apply_search_filter, NOTICE_SEARCH_FIELDS, ADMISSION_SEARCH_FIELDS, USER_SEARCH_FIELDS
 
 User = get_user_model()
 
@@ -40,11 +40,7 @@ class NoticeManagementView(LoginRequiredMixin, PermissionRequiredMixin, ListView
     def get_queryset(self):
         queryset = Notice.objects.all()
         search = self.request.GET.get('search')
-        if search:
-            queryset = queryset.filter(
-                Q(title__icontains=search) | Q(content__icontains=search)
-            )
-        return queryset
+        return apply_search_filter(queryset, search, NOTICE_SEARCH_FIELDS)
 
 
 class NoticeCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
@@ -101,17 +97,18 @@ class AdmissionManagementView(LoginRequiredMixin, PermissionRequiredMixin, ListV
         search = self.request.GET.get('search')
         grade_filter = self.request.GET.get('grade')
         
-        if search:
-            queryset = queryset.filter(
-                Q(first_name__icontains=search) | 
-                Q(last_name__icontains=search) |
-                Q(email__icontains=search)
-            )
+        queryset = apply_search_filter(queryset, search, ADMISSION_SEARCH_FIELDS)
         
-        if grade_filter:
+        if grade_filter and grade_filter != '':
             queryset = queryset.filter(grade_applying_for=grade_filter)
             
-        return queryset
+        return queryset.order_by('-created_at')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Get unique grades for filtering dropdown
+        context['available_grades'] = AdmissionApplication.objects.values_list('grade_applying_for', flat=True).distinct().order_by('grade_applying_for')
+        return context
 
 
 class AdmissionCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
@@ -211,12 +208,7 @@ class UserManagementView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
         search = self.request.GET.get('search')
         role_filter = self.request.GET.get('role')
         
-        if search:
-            queryset = queryset.filter(
-                Q(first_name__icontains=search) | 
-                Q(last_name__icontains=search) |
-                Q(email__icontains=search)
-            )
+        queryset = apply_search_filter(queryset, search, USER_SEARCH_FIELDS)
         
         if role_filter:
             queryset = queryset.filter(groups__id=role_filter)
@@ -226,6 +218,8 @@ class UserManagementView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['groups'] = Group.objects.all()
+        # Get unique grades for filtering
+        context['available_grades'] = AdmissionApplication.objects.values_list('grade_applying_for', flat=True).distinct().order_by('grade_applying_for')
         return context
 
 
@@ -237,12 +231,28 @@ class UserCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     success_url = reverse_lazy('dashboard:user_management')
     
     def form_valid(self, form):
-        # Set a default password for new users
+        password = self.request.POST.get('password')
+        password_confirm = self.request.POST.get('password_confirm')
+        
+        # Validate password
+        if not password:
+            messages.error(self.request, 'Password is required.')
+            return self.form_invalid(form)
+        
+        if len(password) < 8:
+            messages.error(self.request, 'Password must be at least 8 characters long.')
+            return self.form_invalid(form)
+        
+        if password != password_confirm:
+            messages.error(self.request, 'Passwords do not match.')
+            return self.form_invalid(form)
+        
+        # Create user with provided password
         user = form.save(commit=False)
-        user.set_password('defaultpassword123')  # Users should change this
+        user.set_password(password)
         user.save()
-        messages.success(self.request, f'User {user.email} created successfully! Default password: defaultpassword123')
-        return super().form_valid(form)
+        messages.success(self.request, f'User {user.email} created successfully!')
+        return redirect(self.success_url)
 
 
 class UserDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):

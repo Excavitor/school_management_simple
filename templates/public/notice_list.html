@@ -27,7 +27,6 @@
 
 {% block extra_js %}
 <script>
-// Load notices via API - replaces server-side template data
 document.addEventListener('DOMContentLoaded', async function() {
     const urlParams = new URLSearchParams(window.location.search);
     const searchTerm = urlParams.get('search') || '';
@@ -39,29 +38,49 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     await loadNotices({ search: searchTerm });
+    
+    // Simple search form handling - similar to dashboard approach
+    const searchForm = document.querySelector('.search-form');
+    if (searchForm) {
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const searchTerm = searchInput.value.trim();
+            
+            // Update URL and reload notices
+            const url = new URL(window.location);
+            if (searchTerm) {
+                url.searchParams.set('search', searchTerm);
+            } else {
+                url.searchParams.delete('search');
+            }
+            window.history.pushState({}, '', url);
+            
+            loadNotices({ search: searchTerm });
+        });
+    }
 });
 
 async function loadNotices(params = {}) {
     const container = document.getElementById('notices-container');
-    const loadingMessage = document.getElementById('loading-message');
+    
+    // Show loading message
+    container.innerHTML = '<div class="card"><p style="text-align: center; color: #666;">Loading notices...</p></div>';
     
     try {
         const response = await apiClient.getNotices(params);
         const notices = response.results || response;
         
-        loadingMessage.style.display = 'none';
-        
         if (notices && notices.length > 0) {
             container.innerHTML = notices.map(notice => `
                 <div class="card">
-                    <h2 style="color: #3498db; margin-bottom: 10px;">${notice.title}</h2>
+                    <h2 style="color: #3498db; margin-bottom: 10px;">${escapeHtml(notice.title)}</h2>
                     <p style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">
                         Published on ${new Date(notice.created_at).toLocaleDateString('en-US', { 
                             year: 'numeric', month: 'long', day: 'numeric' 
                         })}
                     </p>
                     <div style="line-height: 1.6;">
-                        ${notice.content.replace(/\n/g, '<br>')}
+                        ${escapeHtml(notice.content).replace(/\n/g, '<br>')}
                     </div>
                 </div>
             `).join('');
@@ -69,7 +88,7 @@ async function loadNotices(params = {}) {
             container.innerHTML = `
                 <div class="card">
                     <p style="text-align: center; color: #666; font-size: 1.1rem;">
-                        ${params.search ? 'No notices found matching your search.' : 'No notices available at the moment.'}
+                        ${params.search ? `No notices found matching "${escapeHtml(params.search)}".` : 'No notices available at the moment.'}
                     </p>
                 </div>
             `;
@@ -81,27 +100,23 @@ async function loadNotices(params = {}) {
                 <p style="text-align: center; color: #e74c3c;">
                     Failed to load notices. Please try again later.
                 </p>
+                <p style="text-align: center; margin-top: 10px;">
+                    <button onclick="loadNotices(${JSON.stringify(params)})" class="btn">Retry</button>
+                </p>
             </div>
         `;
     }
 }
 
-// Handle search form submission
-document.querySelector('.search-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const searchTerm = this.querySelector('input[name="search"]').value;
-    
-    // Update URL without page reload
-    const url = new URL(window.location);
-    if (searchTerm) {
-        url.searchParams.set('search', searchTerm);
-    } else {
-        url.searchParams.delete('search');
-    }
-    window.history.pushState({}, '', url);
-    
-    // Load notices with new search term
-    loadNotices({ search: searchTerm });
-});
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
 </script>
 {% endblock %}

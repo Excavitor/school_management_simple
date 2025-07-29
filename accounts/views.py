@@ -5,6 +5,7 @@ from django.views.generic import CreateView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from .models import User
+from .forms import CustomUserRegistrationForm
 
 
 class LoginView(BaseLoginView):
@@ -17,13 +18,11 @@ class LoginView(BaseLoginView):
 
 class RegisterView(CreateView):
     model = User
+    form_class = CustomUserRegistrationForm
     template_name = 'accounts/register.html'
-    fields = ['email', 'password', 'first_name', 'last_name', 'phone']
     success_url = reverse_lazy('accounts:login')
     
     def form_valid(self, form):
-        user = form.save(commit=False)
-        user.set_password(form.cleaned_data['password'])
-        user.save()
+        user = form.save()
         messages.success(self.request, 'Registration successful! Please log in.')
         return super().form_valid(form)

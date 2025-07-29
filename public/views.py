@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect
 from django.views.generic import ListView, CreateView, TemplateView
 from django.urls import reverse_lazy
 from django.contrib import messages
-from django.db.models import Q
 from .models import Notice, AdmissionApplication
+from .utils import apply_search_filter, NOTICE_SEARCH_FIELDS
 
 
 class HomeView(TemplateView):
@@ -23,11 +23,7 @@ class NoticeListView(ListView):
     def get_queryset(self):
         queryset = Notice.objects.filter(is_active=True)
         search = self.request.GET.get('search')
-        if search:
-            queryset = queryset.filter(
-                Q(title__icontains=search) | Q(content__icontains=search)
-            )
-        return queryset
+        return apply_search_filter(queryset, search, NOTICE_SEARCH_FIELDS)
 
 
 class AdmissionFormView(CreateView):

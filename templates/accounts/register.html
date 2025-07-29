@@ -6,43 +6,99 @@
 <div class="card" style="max-width: 500px; margin: 50px auto;">
     <h2 style="text-align: center; margin-bottom: 30px;">Register</h2>
     
-    <form method="post">
+    <form method="post" id="registration-form">
         {% csrf_token %}
         
-        <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
-        </div>
-        
-        <div class="form-group">
-            <label for="first_name">First Name:</label>
-            <input type="text" id="first_name" name="first_name" required>
-        </div>
-        
-        <div class="form-group">
-            <label for="last_name">Last Name:</label>
-            <input type="text" id="last_name" name="last_name" required>
-        </div>
-        
-        <div class="form-group">
-            <label for="phone">Phone:</label>
-            <input type="tel" id="phone" name="phone">
-        </div>
-        
-        <div class="form-group">
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        
         {% if form.errors %}
-            <div class="message error">
+            <div class="message error" id="form-errors">
                 {% for field, errors in form.errors.items %}
                     {% for error in errors %}
-                        <p>{{ error }}</p>
+                        <p><strong>{{ field|title }}:</strong> {{ error }}</p>
                     {% endfor %}
                 {% endfor %}
             </div>
         {% endif %}
+        
+        <div class="form-group">
+            <label for="id_email">Email:</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+                <div class="field-error">
+                    {% for error in form.email.errors %}
+                        <small style="color: #e74c3c;">{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_first_name">First Name:</label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}
+                <div class="field-error">
+                    {% for error in form.first_name.errors %}
+                        <small style="color: #e74c3c;">{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_last_name">Last Name:</label>
+            {{ form.last_name }}
+            {% if form.last_name.errors %}
+                <div class="field-error">
+                    {% for error in form.last_name.errors %}
+                        <small style="color: #e74c3c;">{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_phone">Phone:</label>
+            {{ form.phone }}
+            {% if form.phone.errors %}
+                <div class="field-error">
+                    {% for error in form.phone.errors %}
+                        <small style="color: #e74c3c;">{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_password">Password:</label>
+            {{ form.password }}
+            {% if form.password.help_text %}
+                <small style="color: #666;">{{ form.password.help_text }}</small>
+            {% endif %}
+            {% if form.password.errors %}
+                <div class="field-error">
+                    {% for error in form.password.errors %}
+                        <small style="color: #e74c3c;">{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_confirm_password">Confirm Password:</label>
+            {{ form.confirm_password }}
+            {% if form.confirm_password.help_text %}
+                <small style="color: #666;">{{ form.confirm_password.help_text }}</small>
+            {% endif %}
+            {% if form.confirm_password.errors %}
+                <div class="field-error">
+                    {% for error in form.confirm_password.errors %}
+                        <small style="color: #e74c3c;">{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <div id="password-match-error" class="field-error" style="display: none;">
+                <small style="color: #e74c3c;">Passwords do not match.</small>
+            </div>
+        </div>
         
         <button type="submit" class="btn" style="width: 100%; margin-bottom: 15px;">Register</button>
     </form>
@@ -51,4 +107,48 @@
         Already have an account? <a href="{% url 'accounts:login' %}">Login here</a>
     </p>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registration-form');
+    const passwordField = document.getElementById('id_password');
+    const confirmPasswordField = document.getElementById('id_confirm_password');
+    const passwordMatchError = document.getElementById('password-match-error');
+    
+    // Real-time password matching validation
+    function validatePasswordMatch() {
+        const password = passwordField.value;
+        const confirmPassword = confirmPasswordField.value;
+        
+        if (confirmPassword && password !== confirmPassword) {
+            passwordMatchError.style.display = 'block';
+            confirmPasswordField.style.borderColor = '#e74c3c';
+            return false;
+        } else {
+            passwordMatchError.style.display = 'none';
+            confirmPasswordField.style.borderColor = '#ddd';
+            return true;
+        }
+    }
+    
+    // Add event listeners for real-time validation
+    confirmPasswordField.addEventListener('input', validatePasswordMatch);
+    passwordField.addEventListener('input', function() {
+        if (confirmPasswordField.value) {
+            validatePasswordMatch();
+        }
+    });
+    
+    // Form submission validation
+    form.addEventListener('submit', function(e) {
+        if (!validatePasswordMatch()) {
+            e.preventDefault();
+            confirmPasswordField.focus();
+            return false;
+        }
+    });
+});
+</script>
 {% endblock %}

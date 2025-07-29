@@ -4,8 +4,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.models import Group, Permission
 from django.contrib.auth import get_user_model
-from django.db.models import Q
 from public.models import Notice, AdmissionApplication
+from public.utils import apply_search_filter, check_api_permission, USER_SEARCH_FIELDS
 from .serializers import (
     DashboardStatsSerializer, UserManagementSerializer, 
     GroupManagementSerializer, PermissionSerializer
@@ -83,21 +83,55 @@ class UserManagementViewSet(viewsets.ModelViewSet):
         search = self.request.query_params.get('search', None)
         role_filter = self.request.query_params.get('role', None)
         
-        if search:
-            queryset = queryset.filter(
-                Q(first_name__icontains=search) | 
-                Q(last_name__icontains=search) |
-                Q(email__icontains=search)
-            )
+        queryset = apply_search_filter(queryset, search, USER_SEARCH_FIELDS)
         
         if role_filter:
             queryset = queryset.filter(groups__id=role_filter)
             
         return queryset.order_by('email')
     
+    def list(self, request, *args, **kwargs):
+        """List users - requires view_user permission"""
+        permission_check = check_api_permission(request.user, 'accounts.view_user')
+        if permission_check:
+            return permission_check
+        return super().list(request, *args, **kwargs)
+    
+    def create(self, request, *args, **kwargs):
+        """Create user - requires add_user permission"""
+        permission_check = check_api_permission(request.user, 'accounts.add_user')
+        if permission_check:
+            return permission_check
+        return super().create(request, *args, **kwargs)
+    
+    def update(self, request, *args, **kwargs):
+        """Update user - requires change_user permission"""
+        permission_check = check_api_permission(request.user, 'accounts.change_user')
+        if permission_check:
+            return permission_check
+        return super().update(request, *args, **kwargs)
+    
+    def partial_update(self, request, *args, **kwargs):
+        """Partial update user - requires change_user permission"""
+        permission_check = check_api_permission(request.user, 'accounts.change_user')
+        if permission_check:
+            return permission_check
+        return super().partial_update(request, *args, **kwargs)
+    
+    def destroy(self, request, *args, **kwargs):
+        """Delete user - requires delete_user permission"""
+        permission_check = check_api_permission(request.user, 'accounts.delete_user')
+        if permission_check:
+            return permission_check
+        return super().destroy(request, *args, **kwargs)
+    
     @action(detail=True, methods=['post'])
     def update_roles(self, request, pk=None):
-        """Update user roles - replaces form-based role assignment"""
+        """Update user roles - requires change_group permission"""
+        permission_check = check_api_permission(request.user, 'auth.change_group')
+        if permission_check:
+            return permission_check
+        
         user = self.get_object()
         group_ids = request.data.get('groups', [])
         
@@ -120,6 +154,41 @@ class GroupManagementViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Return all groups with related data"""
         return Group.objects.all().prefetch_related('permissions', 'user_set')
+    
+    def list(self, request, *args, **kwargs):
+        """List groups - requires view_group permission"""
+        permission_check = check_api_permission(request.user, 'auth.view_group')
+        if permission_check:
+            return permission_check
+        return super().list(request, *args, **kwargs)
+    
+    def create(self, request, *args, **kwargs):
+        """Create group - requires add_group permission"""
+        permission_check = check_api_permission(request.user, 'auth.add_group')
+        if permission_check:
+            return permission_check
+        return super().create(request, *args, **kwargs)
+    
+    def update(self, request, *args, **kwargs):
+        """Update group - requires change_group permission"""
+        permission_check = check_api_permission(request.user, 'auth.change_group')
+        if permission_check:
+            return permission_check
+        return super().update(request, *args, **kwargs)
+    
+    def partial_update(self, request, *args, **kwargs):
+        """Partial update group - requires change_group permission"""
+        permission_check = check_api_permission(request.user, 'auth.change_group')
+        if permission_check:
+            return permission_check
+        return super().partial_update(request, *args, **kwargs)
+    
+    def destroy(self, request, *args, **kwargs):
+        """Delete group - requires delete_group permission"""
+        permission_check = check_api_permission(request.user, 'auth.delete_group')
+        if permission_check:
+            return permission_check
+        return super().destroy(request, *args, **kwargs)
 
 
 class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
