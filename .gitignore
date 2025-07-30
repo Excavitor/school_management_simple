@@ -52,6 +52,8 @@ venv.bak/
 ehthumbs.db
 Thumbs.db
 
-# Static files
+# Static files (collected)
 staticfiles/
-static/
+
+# Keep source static files but ignore collected ones
+# static/ - commented out to include source static files in version control

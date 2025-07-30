@@ -233,7 +233,8 @@
     </footer>
 
     <!-- API Client for Frontend-API communication -->
-    <script src="/static/js/api-client.js"></script>
+    {% load static %}
+    <script src="{% static 'js/api-client.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
