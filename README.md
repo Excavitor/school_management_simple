@@ -1,5 +1,5 @@
 ## 🚀 Live Demo
-- 🌐 Click to Visit: [School Management System Website](https://school-management-simple.onrender.com/)
+- 🌐 Click to Visit: [School Management System Website](https://shadabdullah.pythonanywhere.com/)
 
 ## .env file
 ```bash
